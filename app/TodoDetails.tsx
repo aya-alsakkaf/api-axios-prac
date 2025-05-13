@@ -1,121 +1,61 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
-import {
-  ActivityIndicator,
-  StyleSheet,
-  Switch,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import { Todo } from "../models/Todo";
-import { deleteTodo, fetchTodoById, updateTodo } from "../services/api";
+import React, { useState } from "react";
+import { StyleSheet, Switch, Text, TouchableOpacity, View } from "react-native";
+import { Todo } from "../data/Todo";
+import { mockTodos } from "../data/mockData";
 
 export default function TodoDetails() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const [todo, setTodo] = useState<Todo | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [updating, setUpdating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
 
-  useEffect(() => {
-    loadTodo();
-  }, [id]);
+  // useEffect(() => {
+  //   if (id) {
+  //     const foundTodo = mockTodos.find((todo) => todo.id === id);
+  //     setTodo(foundTodo || null);
+  //   }
+  // }, [id]);
 
-  const loadTodo = async () => {
-    if (!id) {
-      setError("No todo ID provided");
-      setLoading(false);
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const todoData = await fetchTodoById(Number(id));
-      if (todoData) {
-        setTodo(todoData);
-        setError(null);
-      } else {
-        setError("Todo not found");
-      }
-    } catch (err) {
-      setError("Failed to load todo details");
-      console.error(err);
-    } finally {
-      setLoading(false);
+  const displayToDoDetails = () => {
+    if (id) {
+      const foundTodo = mockTodos.find((todo) => todo.id === id);
+      setTodo(foundTodo || null);
     }
   };
 
-  const handleToggleComplete = async () => {
+  const handleToggleComplete = () => {
     if (!todo) return;
 
-    try {
-      setUpdating(true);
-      const updatedTodo = { ...todo, completed: !todo.completed };
-      const result = await updateTodo(todo.id, { completed: !todo.completed });
+    setIsUpdating(true);
 
-      if (result) {
-        setTodo(updatedTodo);
-        setError(null);
-      } else {
-        setError("Failed to update todo status");
-      }
-    } catch (err) {
-      setError("An error occurred while updating");
-      console.error(err);
-    } finally {
-      setUpdating(false);
-    }
+    // Simulate API delay
+    setTimeout(() => {
+      setTodo({
+        ...todo,
+        completed: !todo.completed,
+      });
+      setIsUpdating(false);
+    }, 500);
   };
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (!todo) return;
 
-    try {
-      setUpdating(true);
-      const success = await deleteTodo(todo.id);
+    setIsUpdating(true);
 
-      if (success) {
-        // Navigate back after successful deletion
-        router.back();
-      } else {
-        setError("Failed to delete todo");
-        setUpdating(false);
-      }
-    } catch (err) {
-      setError("An error occurred while deleting");
-      console.error(err);
-      setUpdating(false);
-    }
+    // Simulate API delay
+    setTimeout(() => {
+      // Just navigate back in this mock version
+      router.back();
+    }, 500);
   };
-
-  if (loading) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#3498db" />
-        <Text style={styles.loadingText}>Loading todo details...</Text>
-      </View>
-    );
-  }
-
-  if (error) {
-    return (
-      <View style={styles.centered}>
-        <Text style={styles.errorText}>{error}</Text>
-        <TouchableOpacity style={styles.button} onPress={() => router.back()}>
-          <Text style={styles.buttonText}>Go Back</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
 
   if (!todo) {
     return (
       <View style={styles.centered}>
-        <Text>Todo not found</Text>
-        <TouchableOpacity style={styles.button} onPress={() => router.back()}>
-          <Text style={styles.buttonText}>Go Back</Text>
+        <TouchableOpacity style={styles.button} onPress={displayToDoDetails}>
+          <Text style={styles.buttonText}>Load Todo Details</Text>
         </TouchableOpacity>
       </View>
     );
@@ -155,18 +95,11 @@ export default function TodoDetails() {
           <Switch
             value={todo.completed}
             onValueChange={handleToggleComplete}
-            disabled={updating}
+            disabled={isUpdating}
             trackColor={{ false: "#ddd", true: "#81b0ff" }}
             thumbColor={todo.completed ? "#3498db" : "#f4f3f4"}
           />
         </View>
-
-        {updating && (
-          <View style={styles.updatingContainer}>
-            <ActivityIndicator size="small" color="#3498db" />
-            <Text style={styles.updatingText}>Updating...</Text>
-          </View>
-        )}
 
         <View style={styles.buttonContainer}>
           <TouchableOpacity style={styles.button} onPress={() => router.back()}>
@@ -176,7 +109,7 @@ export default function TodoDetails() {
           <TouchableOpacity
             style={[styles.button, styles.deleteButton]}
             onPress={handleDelete}
-            disabled={updating}
+            disabled={isUpdating}
           >
             <Text style={styles.buttonText}>Delete Todo</Text>
           </TouchableOpacity>
@@ -263,16 +196,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#555",
   },
-  updatingContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 20,
-  },
-  updatingText: {
-    marginLeft: 10,
-    color: "#666",
-  },
   buttonContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -286,6 +209,9 @@ const styles = StyleSheet.create({
     flex: 1,
     marginHorizontal: 5,
     alignItems: "center",
+    maxHeight: 50,
+    justifyContent: "center",
+    marginTop: 10,
   },
   deleteButton: {
     backgroundColor: "#e74c3c",
@@ -293,16 +219,5 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "white",
     fontSize: 16,
-  },
-  loadingText: {
-    marginTop: 10,
-    fontSize: 16,
-    color: "#666",
-  },
-  errorText: {
-    color: "#e74c3c",
-    fontSize: 16,
-    textAlign: "center",
-    marginBottom: 20,
   },
 });

@@ -1,12 +1,15 @@
 import { StatusBar } from "expo-status-bar";
 import React from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import { TodoList } from "../components/TodoList";
 
 export default function Index() {
   return (
     <View style={styles.container}>
       <StatusBar style="auto" />
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Todo App</Text>
+      </View>
       <TodoList />
     </View>
   );

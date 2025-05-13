@@ -1,18 +1,17 @@
 import { useRouter } from "expo-router";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { Todo } from "../models/Todo";
+import { Todo } from "../data/Todo";
 
 interface TodoItemProps {
   todo: Todo;
-  onToggle?: (id: number) => void;
+  onToggle?: (id: string) => void;
 }
 
 export const TodoItem: React.FC<TodoItemProps> = ({ todo, onToggle }) => {
   const router = useRouter();
 
-  const handleToggle = (e: any) => {
-    e.stopPropagation();
+  const handleToggle = () => {
     if (onToggle) {
       onToggle(todo.id);
     }
@@ -20,7 +19,7 @@ export const TodoItem: React.FC<TodoItemProps> = ({ todo, onToggle }) => {
 
   const handlePress = () => {
     router.push({
-      pathname: "/screens/TodoDetails",
+      pathname: "/todoDetails",
       params: { id: todo.id.toString() },
     });
   };

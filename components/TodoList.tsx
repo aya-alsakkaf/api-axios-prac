@@ -1,38 +1,25 @@
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
-  ActivityIndicator,
   FlatList,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
-import { Todo } from "../models/Todo";
-import { fetchTodos } from "../services/api";
+import { Todo } from "../data/Todo";
+import { mockTodos } from "../data/mockData";
 import { TodoItem } from "./TodoItem";
 
 export const TodoList: React.FC = () => {
   const router = useRouter();
   const [todos, setTodos] = useState<Todo[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const handleFetchTodos = async () => {
-    try {
-      setLoading(true);
-      const data = await fetchTodos();
-      setTodos(data);
-      setError(null);
-    } catch (err) {
-      setError("Failed to load todos. Please try again.");
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+  const handleLoadTodos = () => {
+    setTodos(mockTodos);
   };
 
-  const handleToggleTodo = (id: number) => {
+  const handleToggleTodo = (id: string) => {
     setTodos(
       todos.map((todo) =>
         todo.id === id ? { ...todo, completed: !todo.completed } : todo
@@ -41,27 +28,16 @@ export const TodoList: React.FC = () => {
   };
 
   const handleCreateTodo = () => {
-    router.push("/screens/CreateTodo");
+    router.push({
+      pathname: "/createTodo",
+    });
   };
-
-  if (loading) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#3498db" />
-        <Text style={styles.loadingText}>Loading todos...</Text>
-      </View>
-    );
-  }
 
   return (
     <View style={styles.container}>
       <View style={styles.buttonRow}>
-        <TouchableOpacity
-          style={styles.fetchButton}
-          onPress={handleFetchTodos}
-          disabled={loading}
-        >
-          <Text style={styles.fetchButtonText}>Fetch Todos</Text>
+        <TouchableOpacity style={styles.fetchButton} onPress={handleLoadTodos}>
+          <Text style={styles.fetchButtonText}>Load Todos</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -72,29 +48,21 @@ export const TodoList: React.FC = () => {
         </TouchableOpacity>
       </View>
 
-      {error && (
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>{error}</Text>
-        </View>
-      )}
-
       {todos.length > 0 ? (
         <FlatList
           style={styles.list}
           data={todos}
-          keyExtractor={(item) => item.id.toString()}
+          keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <TodoItem todo={item} onToggle={handleToggleTodo} />
           )}
         />
       ) : (
-        !loading && (
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>
-              No todos available. Press the button to fetch todos.
-            </Text>
-          </View>
-        )
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>
+            No todos available. Create a new one!
+          </Text>
+        </View>
       )}
     </View>
   );
@@ -108,33 +76,12 @@ const styles = StyleSheet.create({
   list: {
     flex: 1,
   },
-  centered: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
-  },
-  loadingText: {
-    marginTop: 10,
-    fontSize: 16,
-    color: "#666",
-  },
-  errorContainer: {
-    backgroundColor: "#ffe6e6",
-    padding: 10,
-    margin: 10,
-    borderRadius: 5,
-  },
-  errorText: {
-    color: "red",
-    fontSize: 16,
-    textAlign: "center",
-  },
   buttonRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     marginHorizontal: 10,
     marginTop: 10,
+    marginBottom: 10,
   },
   fetchButton: {
     backgroundColor: "#3498db",
