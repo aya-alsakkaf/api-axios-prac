@@ -1,27 +1,24 @@
 import { Stack } from "expo-router";
+import React from "react";
 
-export default function RootLayout() {
+export default function ScreensLayout() {
   return (
-    <Stack
-      screenOptions={{
-        headerStyle: {
-          backgroundColor: "#3498db",
-        },
-        headerTintColor: "white",
-        headerShadowVisible: false,
-      }}
-    >
+    <Stack>
+      <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen
-        name="index"
+        name="todoDetails"
         options={{
-          title: "Todo List",
-          // headerShown: false,
+          headerTitle: "Todo Details",
+          headerTintColor: "white",
+          headerStyle: { backgroundColor: "#3498db" },
         }}
       />
       <Stack.Screen
-        name="screens"
+        name="createTodo"
         options={{
-          headerShown: false,
+          headerTitle: "Create New Todo",
+          headerTintColor: "white",
+          headerStyle: { backgroundColor: "#3498db" },
         }}
       />
     </Stack>

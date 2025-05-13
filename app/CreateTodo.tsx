@@ -1,7 +1,6 @@
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
-  ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
   Platform,
@@ -13,62 +12,31 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { createTodo } from "../services/api";
+import { mockTodos } from "../data/mockData";
 
 export default function CreateTodo() {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [completed, setCompleted] = useState(false);
-  const [userId, setUserId] = useState("1"); // Default userId
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [userId, setUserId] = useState("1");
 
-  const isFormValid = title.trim().length > 0 && userId.trim().length > 0;
+  const handleCreateTodo = () => {
+    // Create new todo with mock ID
+    const highestId = Math.max(
+      ...mockTodos.map((todo) => parseInt(todo.id)),
+      0
+    );
+    const newId = (highestId + 1).toString();
 
-  const handleCreateTodo = async () => {
-    if (!isFormValid) {
-      setError("Please enter a title and user ID");
-      return;
-    }
-
-    const userIdNumber = parseInt(userId, 10);
-    if (isNaN(userIdNumber)) {
-      setError("User ID must be a number");
-      return;
-    }
-
-    try {
-      setLoading(true);
-      setError(null);
-
-      const newTodo = {
-        title: title.trim(),
-        completed,
-        userId: userIdNumber,
-      };
-
-      const result = await createTodo(newTodo);
-
-      if (result) {
-        Alert.alert(
-          "Success",
-          `Todo created successfully with ID: ${result.id}`,
-          [
-            {
-              text: "OK",
-              onPress: () => router.back(),
-            },
-          ]
-        );
-      } else {
-        setError("Failed to create todo");
-      }
-    } catch (err) {
-      setError("An error occurred while creating the todo");
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+    // Simulate API delay
+    setTimeout(() => {
+      Alert.alert("Success", `Todo created successfully with ID: ${newId}`, [
+        {
+          text: "OK",
+          onPress: () => router.back(),
+        },
+      ]);
+    }, 1000);
   };
 
   return (
@@ -115,31 +83,19 @@ export default function CreateTodo() {
             />
           </View>
 
-          {error && <Text style={styles.errorText}>{error}</Text>}
-
           <View style={styles.buttonContainer}>
             <TouchableOpacity
               style={styles.button}
               onPress={() => router.back()}
-              disabled={loading}
             >
               <Text style={styles.buttonText}>Cancel</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[
-                styles.button,
-                styles.createButton,
-                !isFormValid && styles.disabledButton,
-              ]}
+              style={[styles.button, styles.createButton]}
               onPress={handleCreateTodo}
-              disabled={loading || !isFormValid}
             >
-              {loading ? (
-                <ActivityIndicator size="small" color="white" />
-              ) : (
-                <Text style={styles.buttonText}>Create Todo</Text>
-              )}
+              <Text style={styles.buttonText}>Create Todo</Text>
             </TouchableOpacity>
           </View>
         </View>
